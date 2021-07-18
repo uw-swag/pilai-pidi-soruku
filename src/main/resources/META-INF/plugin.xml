@@ -6,14 +6,14 @@
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
-
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.noblemathews.crosssrcbuggy.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.noblemathews.crosssrcbuggy.services.MyProjectService"/>
+        <toolWindow id="Src Buggy" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+                    factoryClass="toolWindow.MyToolWindowFactory"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.noblemathews.crosssrcbuggy.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
+<!--    <actions>-->
+<!--        <action class="com.github.noblemathews.protobuggy.generatePsi.PsiAction" id="PsiBuggy"-->
+<!--                text="Extract PSI...">-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->
+<!--        </action>-->
+<!--    </actions>-->
 </idea-plugin>
