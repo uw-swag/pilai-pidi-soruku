@@ -56,6 +56,10 @@ public class MyToolWindow implements TreeSelectionListener {
     assert activeProject != null;
     directory = activeProject.getBasePath();
     arguments[0] = directory;
+
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
+    DefaultTreeModel treeModel = new DefaultTreeModel(root);
+
     XmlUtil.MyResult result = Main.main(arguments);
     int violations_count = 0;
     for(Encl_name_pos_tuple source_node: result.getSource_nodes()){
@@ -69,7 +73,7 @@ public class MyToolWindow implements TreeSelectionListener {
 
           requiredPath.get(0).getVertexList().forEach(x->System.out.print(x + " -> "));
           System.out.println();
-          violations.forEach(violation-> System.err.println("Reason : "+violation));
+          violations.forEach(violation-> root.add(new DefaultMutableTreeNode(violation)));
 
           violations_count = violations_count + violations.size();
         }
@@ -78,8 +82,7 @@ public class MyToolWindow implements TreeSelectionListener {
     System.out.println("No of files analyzed "+ result.getJava_slice_profiles_info().size());
     System.out.println("Detected violations "+ violations_count);
 
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
-    DefaultTreeModel treeModel = new DefaultTreeModel(root);
+
 
     DefaultMutableTreeNode lv1 = new DefaultMutableTreeNode("lv1");
     DefaultMutableTreeNode lv12 = new DefaultMutableTreeNode("lv12");
