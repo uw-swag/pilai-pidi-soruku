@@ -5,6 +5,7 @@ import com.noble.util.OsUtils;
 import org.apache.commons.io.IOUtils;
 import org.jgrapht.*;
 //import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
+import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.*;
 
 import org.w3c.dom.Document;
@@ -59,7 +60,7 @@ public class Main {
 //        fw.close();
 //    }
 
-    public static MyResult main(String[] args) {
+    public static Hashtable<String, ArrayList<String>> main(String[] args) {
         long start = System.currentTimeMillis();
         String projectLocation=null;
         String srcML = null;
@@ -171,6 +172,8 @@ public class Main {
                 }
             }
 
+            long end = System.currentTimeMillis();
+            System.out.println("Completed in " + (end - start)/1000 + "s");
             return print_violations();
 
         } catch (URISyntaxException | IOException | SAXException | ParserConfigurationException e) {
@@ -178,15 +181,47 @@ public class Main {
         }
         return null;
     }
-
-    private static MyResult print_violations() {
+    private static Hashtable<String, ArrayList<String>> print_violations() {
+        Hashtable<String, ArrayList<String>> tempTable = new Hashtable<>();
         ArrayList<Encl_name_pos_tuple> source_nodes = new ArrayList<>();
         for(Encl_name_pos_tuple node:DG.vertexSet()){
             if (DG.inDegreeOf(node) == 0)
-            source_nodes.add(node);
+                source_nodes.add(node);
         }
-
-        return new MyResult(source_nodes,detected_violations,java_slice_profiles_info, DG);
+        int violations_count = 0;
+        for(Encl_name_pos_tuple source_node: source_nodes){
+            Enumeration<Encl_name_pos_tuple> violationE = detected_violations.keys();
+            while (violationE.hasMoreElements()) {
+                Encl_name_pos_tuple violated_node_pos_pair = violationE.nextElement();
+                ArrayList<String> violations = detected_violations.get(violated_node_pos_pair);
+                AllDirectedPaths<Encl_name_pos_tuple,DefaultEdge> allDirectedPaths = new AllDirectedPaths<>(DG);
+                List<GraphPath<Encl_name_pos_tuple,DefaultEdge>> requiredPath = allDirectedPaths.getAllPaths(source_node, violated_node_pos_pair, true, null);
+                if(!requiredPath.isEmpty()){
+                    System.out.print("Possible out-of-bounds operation path : ");
+                    StringBuilder vPath = new StringBuilder("");
+                    requiredPath.get(0).getVertexList().forEach(x-> vPath.append(x).append(" -> "));
+                    System.out.println(vPath);
+//                    shortestBellman(DG,source_node, violated_node_pos_pair)
+//                            .forEach(x->System.out.print(x + " -> "));
+                    violations.forEach(violation-> {
+                        ArrayList<String> currentArray;
+                        //noinspection ConstantConditions
+                        if(tempTable.containsKey(violation))
+                            currentArray = new ArrayList<String>(tempTable.get(violation));
+                        else
+                            currentArray = new ArrayList<>();
+                        currentArray.add(vPath.toString());
+                        tempTable.put(violation,currentArray);
+                        System.err.println("Reason : "+violation);
+                    });
+                    violations_count = violations_count + violations.size();
+                }
+            }
+        }
+        System.out.println("No of files analyzed "+ java_slice_profiles_info.size());
+        System.out.println("Detected violations "+ violations_count);
+//        if(violations_count>0) System.exit(1);
+        return tempTable;
     }
 
     private static void analyze_slice_profile(SliceProfile profile, Hashtable<String, SliceProfilesInfo> raw_profiles_info) {
@@ -328,7 +363,7 @@ public class Main {
                 String function_name = func.getName();
                 if(!function_name.toLowerCase().endsWith(jni_function_search_str.toLowerCase())) continue;
                 ArrayList<NamePos> function_args = find_function_parameters(function_node);
-                if(function_args.size()<1 || jni_arg_pos_index>function_args.size()) continue;
+                if(function_args.size()<1 || jni_arg_pos_index>function_args.size()-1) continue;
                 NamePos arg = function_args.get(jni_arg_pos_index);
                 String key = arg.getName() + "%" + arg.getPos() +"%" + function_name + "%" + file_path;
                 SliceProfile possible_slice_profile = null;
@@ -390,7 +425,7 @@ public class Main {
             if(!function_name.equals(cfunction_name)) continue;
             
             ArrayList<NamePos> func_args = find_function_parameters(possible_function_node);
-            if(func_args.size()==0 || arg_pos_index>func_args.size()) continue;
+            if(func_args.size()==0 || arg_pos_index>=func_args.size()) continue;
 
             int arg_index = arg_pos_index -1;
             String param_name = func_args.get(arg_index).getName();
