@@ -7,6 +7,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.WindowManager;
 import com.noble.Main;
+import com.noble.models.Encl_name_pos_tuple;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -14,9 +15,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
+import java.util.List;
 
 public class MyToolWindow implements TreeSelectionListener {
 
@@ -50,15 +50,19 @@ public class MyToolWindow implements TreeSelectionListener {
     DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
 
-    Hashtable<String, ArrayList<String>> result = Main.main(arguments);
+    Hashtable<String, Set<List<Encl_name_pos_tuple>>> result = Main.main(arguments);
 
     Enumeration<String> res_to_analyze = result.keys();
     while (res_to_analyze.hasMoreElements()) {
       String key = res_to_analyze.nextElement();
-      ArrayList<String> currrent_violation = result.get(key);
+      Set<List<Encl_name_pos_tuple>> current_violation = result.get(key);
       DefaultMutableTreeNode current_node = new DefaultMutableTreeNode(key);
       root.add(current_node);
-      currrent_violation.forEach(v->current_node.add(new DefaultMutableTreeNode(v)));
+      current_violation.forEach(v-> {
+        DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
+        v.forEach(el->inner_node.add(new DefaultMutableTreeNode(el)));
+        current_node.add(inner_node);
+      });
     }
 
     filesInConnection.addTreeSelectionListener(this);

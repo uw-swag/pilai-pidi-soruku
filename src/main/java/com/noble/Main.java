@@ -60,7 +60,7 @@ public class Main {
 //        fw.close();
 //    }
 
-    public static Hashtable<String, ArrayList<String>> main(String[] args) {
+    public static Hashtable<String, Set<List<Encl_name_pos_tuple>>> main(String[] args) {
         long start = System.currentTimeMillis();
         String projectLocation=null;
         String srcML = null;
@@ -181,8 +181,8 @@ public class Main {
         }
         return null;
     }
-    private static Hashtable<String, ArrayList<String>> print_violations() {
-        Hashtable<String, ArrayList<String>> tempTable = new Hashtable<>();
+    private static Hashtable<String, Set<List<Encl_name_pos_tuple>>> print_violations() {
+        Hashtable<String, Set<List<Encl_name_pos_tuple>>> tempTable = new Hashtable<>();
         ArrayList<Encl_name_pos_tuple> source_nodes = new ArrayList<>();
         for(Encl_name_pos_tuple node:DG.vertexSet()){
             if (DG.inDegreeOf(node) == 0)
@@ -198,19 +198,19 @@ public class Main {
                 List<GraphPath<Encl_name_pos_tuple,DefaultEdge>> requiredPath = allDirectedPaths.getAllPaths(source_node, violated_node_pos_pair, true, null);
                 if(!requiredPath.isEmpty()){
                     System.out.print("Possible out-of-bounds operation path : ");
-                    StringBuilder vPath = new StringBuilder("");
-                    requiredPath.get(0).getVertexList().forEach(x-> vPath.append(x).append(" -> "));
+                    StringBuilder vPath = new StringBuilder();
+                    List<Encl_name_pos_tuple> vertexList = requiredPath.get(0).getVertexList();
+                    vertexList.forEach(x-> vPath.append(x).append(" -> "));
                     System.out.println(vPath);
 //                    shortestBellman(DG,source_node, violated_node_pos_pair)
 //                            .forEach(x->System.out.print(x + " -> "));
                     violations.forEach(violation-> {
-                        ArrayList<String> currentArray;
-                        //noinspection ConstantConditions
+                        Set<List<Encl_name_pos_tuple>> currentArray;
                         if(tempTable.containsKey(violation))
-                            currentArray = new ArrayList<String>(tempTable.get(violation));
+                            currentArray = tempTable.get(violation);
                         else
-                            currentArray = new ArrayList<>();
-                        currentArray.add(vPath.toString());
+                            currentArray = new HashSet<>();
+                        currentArray.add(vertexList);
                         tempTable.put(violation,currentArray);
                         System.err.println("Reason : "+violation);
                     });
