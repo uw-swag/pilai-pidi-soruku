@@ -44,6 +44,7 @@ public class MyToolWindow implements TreeSelectionListener {
   }
 
   public void runSrcBuggy() {
+    filesInConnection.setVisible(false);
     String[] arguments = {"location"};
     String directory;
     Project[] projects = ProjectManager.getInstance().getOpenProjects();
@@ -75,7 +76,7 @@ public class MyToolWindow implements TreeSelectionListener {
           current_node.add(inner_node);
         });
       }
-
+      filesInConnection.setVisible(true);
       filesInConnection.addTreeSelectionListener(that);
       filesInConnection.setModel(treeModel);
       filesInConnection.setRootVisible(true);
