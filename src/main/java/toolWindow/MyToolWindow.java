@@ -71,10 +71,11 @@ public class MyToolWindow implements TreeSelectionListener {
         DefaultMutableTreeNode current_node = new DefaultMutableTreeNode(key);
         root.add(current_node);
         current_violation.forEach(v-> {
-          DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
-          v.forEach(el->inner_node.add(new DefaultMutableTreeNode(el)));
-          current_node.add(inner_node);
+//          DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
+          v.forEach(el->current_node.add(new DefaultMutableTreeNode(el)));
+//          current_node.add(inner_node);
         });
+        current_node.add(new DefaultMutableTreeNode(key));
       }
       filesInConnection.setVisible(true);
       filesInConnection.addTreeSelectionListener(that);
@@ -92,15 +93,22 @@ public class MyToolWindow implements TreeSelectionListener {
   @Override
   public void valueChanged(TreeSelectionEvent e) {
     try{
-      if (e.getNewLeadSelectionPath().getParentPath().getLastPathComponent().toString().equals("Violation Path")){
+      DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) e.getNewLeadSelectionPath().getLastPathComponent();
+      if (lastPathComponent.toString().split(",").length>1){
         String[] target = e.getNewLeadSelectionPath().getLastPathComponent().toString().split(",");
         String pos = target[target.length-1];
         goToPos(target, pos);
       }
 //    for logic below to work violated node must be in the same doc as the exception point "... at [...]"
-      else if(e.getNewLeadSelectionPath().getParentPath().getLastPathComponent().toString().equals("Possible Buffer Overflow Violations")){
-        String[] modTarget = ((DefaultMutableTreeNode)((DefaultMutableTreeNode)e.getNewLeadSelectionPath().getLastPathComponent()).getFirstChild()).getLastChild().toString().split(",");
-        String[] target = e.getNewLeadSelectionPath().getLastPathComponent().toString().split(" ");
+      else {
+        String[] modTarget;
+        if(lastPathComponent.getParent().toString().equals("Possible Buffer Overflow Violations")){
+          modTarget = lastPathComponent.getChildAt(Collections.list(lastPathComponent.children()).size()-2).toString().split(",");
+        }
+        else{
+          modTarget = lastPathComponent.getParent().getChildAt(Collections.list(lastPathComponent.getParent().children()).size()-2).toString().split(",");
+        }
+        String[] target = lastPathComponent.toString().split(" ");
         String pos = target[target.length-1];
         goToPos(modTarget, pos);
       }
