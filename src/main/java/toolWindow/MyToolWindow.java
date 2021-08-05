@@ -2,23 +2,42 @@
 
 package toolWindow;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.xdebugger.XDebuggerManager;
+import com.intellij.xdebugger.XDebuggerUtil;
+import com.intellij.xdebugger.breakpoints.XBreakpointManager;
+import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
+import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import com.noble.Main;
 import com.noble.models.Encl_name_pos_tuple;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -36,10 +55,73 @@ public class MyToolWindow implements TreeSelectionListener {
   private JScrollPane scrollerWindow;
 
   private Project activeProject = null;
+  private TreePath c_path;
+
+  private static final NotificationGroup STICKY_GROUP =
+          new NotificationGroup("SrcBuggy",
+                  NotificationDisplayType.STICKY_BALLOON, true);
+
+  class TreePopup extends JPopupMenu {
+    public TreePopup(JTree tree) {
+      JMenuItem add = new JMenuItem("breakpoint");
+      add.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+          DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) c_path.getLastPathComponent();
+          if (lastPathComponent.toString().split(",").length>1){
+            String[] target = lastPathComponent.toString().split(",");
+            String pos = target[target.length-1];
+            Path file = Paths.get(target[target.length - 2]);
+            if(file.toString().endsWith(".cpp")){
+                Notification msg = STICKY_GROUP.createNotification(
+                "Method Exception", "Target lies in CPP file", "Idea cannot set breakpoints in cpp files",
+                NotificationType.INFORMATION);
+                msg.notify();
+            }
+            else{
+              addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
+            }
+          }
+//    for logic below to work violated node must be in the same doc as the exception point "... at [...]"
+          else {
+            String[] modTarget;
+            if(lastPathComponent.getParent().toString().equals("Possible Buffer Overflow Violations")){
+              modTarget = lastPathComponent.getChildAt(Collections.list(lastPathComponent.children()).size()-2).toString().split(",");
+            }
+            else{
+              modTarget = lastPathComponent.getParent().getChildAt(Collections.list(lastPathComponent.getParent().children()).size()-2).toString().split(",");
+            }
+            String[] target = lastPathComponent.toString().split(" ");
+            String pos = target[target.length-1];
+            Path file = Paths.get(modTarget[modTarget.length - 2]);
+            if(file.toString().endsWith(".cpp")){
+              Notification msg = STICKY_GROUP.createNotification(
+                      "Method Exception", "Target lies in CPP file", "Idea cannot set breakpoints in cpp files",
+                      NotificationType.INFORMATION);
+              msg.notify();
+            }
+            else{
+              addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
+            }
+          }
+        }
+      });
+      add(add);
+      add(new JSeparator());
+    }
+  }
+
   public MyToolWindow(ToolWindow toolWindow) {
     hideToolWindowButton.addActionListener(e -> toolWindow.hide(null));
     refreshToolWindowButton.addActionListener(e -> runSrcBuggy());
-
+    final TreePopup treePopup = new TreePopup(filesInConnection);
+    filesInConnection.addMouseListener(new MouseAdapter() {
+      public void mouseReleased(MouseEvent e) {
+        c_path = filesInConnection.getPathForLocation(e.getX(), e.getY());
+        if(e.isPopupTrigger() && c_path.getParentPath()!=null) {
+          treePopup.show(e.getComponent(), e.getX(), e.getY());
+        }
+      }
+    });
     this.runSrcBuggy();
   }
 
@@ -88,6 +170,58 @@ public class MyToolWindow implements TreeSelectionListener {
 
   public JPanel getContent() {
     return myToolWindowContent;
+  }
+
+  private void addLineBreakpoint(final Project project, final String fileUrl, final int line) {
+    class MyBreakpointProperties extends XBreakpointProperties<MyBreakpointProperties> {
+      public String myOption;
+
+      public MyBreakpointProperties() {}
+
+      @Override
+      public MyBreakpointProperties getState() {
+        return this;
+      }
+
+      @Override
+      public void loadState(final MyBreakpointProperties state) {
+        myOption = state.myOption;
+      }
+    }
+
+    class MyLineBreakpointType extends XLineBreakpointType<MyBreakpointProperties> {
+      public MyLineBreakpointType() {
+        super("testId", "testTitle");
+      }
+
+      @Override
+      public MyBreakpointProperties createBreakpointProperties(@NotNull VirtualFile file, final int line) {
+        return null;
+      }
+
+      @Override
+      public MyBreakpointProperties createProperties() {
+        return new MyBreakpointProperties();
+      }
+    }
+
+    final XBreakpointManager breakpointManager = XDebuggerManager.getInstance(project).getBreakpointManager();
+    final MyLineBreakpointType MY_LINE_BREAKPOINT_TYPE = new MyLineBreakpointType();
+    final MyBreakpointProperties MY_LINE_BREAKPOINT_PROPERTIES = new MyBreakpointProperties();
+
+    // add new line break point
+    Runnable runnable = () -> breakpointManager.addLineBreakpoint(
+            MY_LINE_BREAKPOINT_TYPE,
+            fileUrl,
+            line,
+            MY_LINE_BREAKPOINT_PROPERTIES
+    );
+    WriteCommandAction.runWriteCommandAction(project, runnable);
+
+    // toggle breakpoint to activate
+    VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(new File(fileUrl));
+    assert virtualFile != null;
+    XDebuggerUtil.getInstance().toggleLineBreakpoint(project, virtualFile, line-1);
   }
 
   @Override
