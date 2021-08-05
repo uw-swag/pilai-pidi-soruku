@@ -7,19 +7,10 @@
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <notification.parentGroup
-                id="SrcBuggy"
-                title="SrcBuggy: Alert"/>
-        <notification.group
-                parentId="SrcBuggy"
-                groupId="demo.notifications.balloon"/>
-        <notification.group
-                parentId="SrcBuggy"
-                groupId="demo.notifications.stickyBalloon"/>
-
         <toolWindow id="Src Buggy" secondary="true" icon="AllIcons.General.Modified" anchor="right"
                     factoryClass="toolWindow.MyToolWindowFactory"/>
     </extensions>
+
 <!--    <actions>-->
 <!--        <action class="com.github.noblemathews.protobuggy.generatePsi.PsiAction" id="PsiBuggy"-->
 <!--                text="Extract PSI...">-->

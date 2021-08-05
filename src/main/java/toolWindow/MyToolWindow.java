@@ -3,9 +3,8 @@
 package toolWindow;
 
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationDisplayType;
-import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -33,8 +32,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -57,51 +54,46 @@ public class MyToolWindow implements TreeSelectionListener {
   private Project activeProject = null;
   private TreePath c_path;
 
-  private static final NotificationGroup STICKY_GROUP =
-          new NotificationGroup("SrcBuggy",
-                  NotificationDisplayType.STICKY_BALLOON, true);
-
   class TreePopup extends JPopupMenu {
-    public TreePopup(JTree tree) {
+    private void cppBreakNotification() {
+      String GROUP_DISPLAY_ID = "SrcBuggy";
+      String messageTitle = "Warning CPP Breakpoint";
+      String messageDetails = "Method lies in a cpp files which cannot be debugged with Idea";
+      Notification notification = new Notification(GROUP_DISPLAY_ID, GROUP_DISPLAY_ID + ": " + messageTitle, messageDetails, NotificationType.INFORMATION);
+      Notifications.Bus.notify(notification);
+    }
+    public TreePopup() {
       JMenuItem add = new JMenuItem("breakpoint");
-      add.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) c_path.getLastPathComponent();
-          if (lastPathComponent.toString().split(",").length>1){
-            String[] target = lastPathComponent.toString().split(",");
-            String pos = target[target.length-1];
-            Path file = Paths.get(target[target.length - 2]);
-            if(file.toString().endsWith(".cpp")){
-                Notification msg = STICKY_GROUP.createNotification(
-                "Method Exception", "Target lies in CPP file", "Idea cannot set breakpoints in cpp files",
-                NotificationType.INFORMATION);
-                msg.notify();
-            }
-            else{
-              addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
-            }
+      add.addActionListener(ae -> {
+        DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) c_path.getLastPathComponent();
+        if (lastPathComponent.toString().split(",").length>1){
+          String[] target = lastPathComponent.toString().split(",");
+          String pos = target[target.length-1];
+          Path file = Paths.get(target[target.length - 2]);
+          if(file.toString().endsWith(".cpp")){
+            cppBreakNotification();
           }
+          else{
+            addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
+          }
+        }
 //    for logic below to work violated node must be in the same doc as the exception point "... at [...]"
-          else {
-            String[] modTarget;
-            if(lastPathComponent.getParent().toString().equals("Possible Buffer Overflow Violations")){
-              modTarget = lastPathComponent.getChildAt(Collections.list(lastPathComponent.children()).size()-2).toString().split(",");
-            }
-            else{
-              modTarget = lastPathComponent.getParent().getChildAt(Collections.list(lastPathComponent.getParent().children()).size()-2).toString().split(",");
-            }
-            String[] target = lastPathComponent.toString().split(" ");
-            String pos = target[target.length-1];
-            Path file = Paths.get(modTarget[modTarget.length - 2]);
-            if(file.toString().endsWith(".cpp")){
-              Notification msg = STICKY_GROUP.createNotification(
-                      "Method Exception", "Target lies in CPP file", "Idea cannot set breakpoints in cpp files",
-                      NotificationType.INFORMATION);
-              msg.notify();
-            }
-            else{
-              addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
-            }
+        else {
+          String[] modTarget;
+          if(lastPathComponent.getParent().toString().equals("Possible Buffer Overflow Violations")){
+            modTarget = lastPathComponent.getChildAt(Collections.list(lastPathComponent.children()).size()-2).toString().split(",");
+          }
+          else{
+            modTarget = lastPathComponent.getParent().getChildAt(Collections.list(lastPathComponent.getParent().children()).size()-2).toString().split(",");
+          }
+          String[] target = lastPathComponent.toString().split(" ");
+          String pos = target[target.length-1];
+          Path file = Paths.get(modTarget[modTarget.length - 2]);
+          if(file.toString().endsWith(".cpp")){
+            cppBreakNotification();
+          }
+          else{
+            addLineBreakpoint(activeProject,file.toString(),Integer.parseInt(pos));
           }
         }
       });
@@ -113,7 +105,7 @@ public class MyToolWindow implements TreeSelectionListener {
   public MyToolWindow(ToolWindow toolWindow) {
     hideToolWindowButton.addActionListener(e -> toolWindow.hide(null));
     refreshToolWindowButton.addActionListener(e -> runSrcBuggy());
-    final TreePopup treePopup = new TreePopup(filesInConnection);
+    final TreePopup treePopup = new TreePopup();
     filesInConnection.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent e) {
         c_path = filesInConnection.getPathForLocation(e.getX(), e.getY());
