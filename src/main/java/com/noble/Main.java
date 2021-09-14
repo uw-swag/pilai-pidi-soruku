@@ -4,8 +4,8 @@ import com.noble.models.*;
 import com.noble.util.OsUtils;
 import org.apache.commons.io.IOUtils;
 import org.jgrapht.*;
-//import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
+//import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.graph.*;
 
 import org.w3c.dom.Document;
@@ -60,7 +60,12 @@ public class Main {
 //        fw.close();
 //    }
 
-    public static Hashtable<String, Set<List<Encl_name_pos_tuple>>> main(String[] args) {
+    public static void main(String[] args) {
+        nonCLI(args);
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public static Hashtable<String, Set<List<Encl_name_pos_tuple>>> nonCLI(String[] args) {
         long start = System.currentTimeMillis();
         String projectLocation=null;
         String srcML = null;
@@ -181,6 +186,7 @@ public class Main {
         }
         return null;
     }
+
     private static Hashtable<String, Set<List<Encl_name_pos_tuple>>> print_violations() {
         Hashtable<String, Set<List<Encl_name_pos_tuple>>> tempTable = new Hashtable<>();
         ArrayList<Encl_name_pos_tuple> source_nodes = new ArrayList<>();
@@ -248,7 +254,7 @@ public class Main {
         }
         encl_name_pos_tuple = new Encl_name_pos_tuple(profile.var_name,profile.function_name,profile.file_name,profile.defined_position);
         if (!DG.containsVertex(encl_name_pos_tuple))
-        DG.addVertex(encl_name_pos_tuple);
+            DG.addVertex(encl_name_pos_tuple);
 
 //                  step-02 : analyze data dependent vars of the slice variable
 
@@ -274,7 +280,7 @@ public class Main {
         if(!profile.function_name.equals("GLOBAL") && profile.cfunctions.size()<1){
             Node encl_function_node = profile.function_node;
             if (is_function_of_given_modifier(encl_function_node, jni_native_method_modifier)){
-               analyze_native_function(profile, raw_profiles_info, encl_function_node, encl_name_pos_tuple);
+                analyze_native_function(profile, raw_profiles_info, encl_function_node, encl_name_pos_tuple);
             }
         }
 
@@ -286,9 +292,9 @@ public class Main {
                     if(DataAccessType.BUFFER_WRITE == access.access_type){
                         ArrayList<String> currentArr;
                         if(detected_violations.containsKey(encl_name_pos_tuple))
-                        currentArr = new ArrayList<>(detected_violations.get(encl_name_pos_tuple));
+                            currentArr = new ArrayList<>(detected_violations.get(encl_name_pos_tuple));
                         else
-                        currentArr = new ArrayList<>();
+                            currentArr = new ArrayList<>();
                         currentArr.add("Buffer write at " + access.access_pos);
                         detected_violations.put(encl_name_pos_tuple,currentArr);
                     }
@@ -323,16 +329,16 @@ public class Main {
         while (profiles_to_analyze.hasMoreElements()) {
             String file_path = profiles_to_analyze.nextElement();
             SliceProfilesInfo profile_info = java_slice_profiles_info.get(file_path);
-                for (cFunction cfunction: find_possible_functions(profile_info.function_nodes, cfunction_name, arg_pos_index, current_function_node)
-                ) {
-                    NamePos param = cfunction.getFunc_args().get(arg_pos_index-1);
-                    String param_name = param.getName();
-                    String param_pos = param.getPos();
-                    String key = param_name + "%" + param_pos + "%" + cfunction_name + "%" + file_path;
-                    if(!profile_info.slice_profiles.containsKey(key)) continue;
-                    dependent_slice_profiles.add(profile_info.slice_profiles.get(key));
-                }
+            for (cFunction cfunction: find_possible_functions(profile_info.function_nodes, cfunction_name, arg_pos_index, current_function_node)
+            ) {
+                NamePos param = cfunction.getFunc_args().get(arg_pos_index-1);
+                String param_name = param.getName();
+                String param_pos = param.getPos();
+                String key = param_name + "%" + param_pos + "%" + cfunction_name + "%" + file_path;
+                if(!profile_info.slice_profiles.containsKey(key)) continue;
+                dependent_slice_profiles.add(profile_info.slice_profiles.get(key));
             }
+        }
         return dependent_slice_profiles;
     }
 
@@ -396,9 +402,9 @@ public class Main {
     private static boolean has_no_edge(Encl_name_pos_tuple source_name_pos_tuple, Encl_name_pos_tuple target_name_pos_tuple) {
         if(source_name_pos_tuple.equals(target_name_pos_tuple)) return false;
         if(!DG.containsVertex(source_name_pos_tuple))
-        DG.addVertex(source_name_pos_tuple);
+            DG.addVertex(source_name_pos_tuple);
         if(!DG.containsVertex(target_name_pos_tuple))
-        DG.addVertex(target_name_pos_tuple);
+            DG.addVertex(target_name_pos_tuple);
 
 //        if(DG.containsEdge(source_name_pos_tuple,target_name_pos_tuple)) return false;
 //        if(!DG.containsVertex(target_name_pos_tuple))
@@ -423,7 +429,7 @@ public class Main {
             Node possible_function_node = function_nodes.get(key);
             String function_name = key.getName();
             if(!function_name.equals(cfunction_name)) continue;
-            
+
             ArrayList<NamePos> func_args = find_function_parameters(possible_function_node);
             if(func_args.size()==0 || arg_pos_index>=func_args.size()) continue;
 

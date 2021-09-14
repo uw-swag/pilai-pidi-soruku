@@ -109,7 +109,7 @@ public class MyToolWindow implements TreeSelectionListener {
     filesInConnection.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent e) {
         c_path = filesInConnection.getPathForLocation(e.getX(), e.getY());
-        if(e.isPopupTrigger() && c_path.getParentPath()!=null) {
+        if(e.isPopupTrigger() && c_path.getLastPathComponent().toString().matches(".*\\d.*")) {
           treePopup.show(e.getComponent(), e.getX(), e.getY());
         }
       }
@@ -136,7 +136,7 @@ public class MyToolWindow implements TreeSelectionListener {
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
     MyToolWindow that = this;
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      Hashtable<String, Set<List<Encl_name_pos_tuple>>> result = Main.main(arguments);
+      Hashtable<String, Set<List<Encl_name_pos_tuple>>> result = Main.nonCLI(arguments);
 
       Enumeration<String> res_to_analyze = result.keys();
       while (res_to_analyze.hasMoreElements()) {
@@ -145,11 +145,11 @@ public class MyToolWindow implements TreeSelectionListener {
         DefaultMutableTreeNode current_node = new DefaultMutableTreeNode(key);
         root.add(current_node);
         current_violation.forEach(v-> {
-//          DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
-          v.forEach(el->current_node.add(new DefaultMutableTreeNode(el)));
-//          current_node.add(inner_node);
+          DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
+          v.forEach(el->inner_node.add(new DefaultMutableTreeNode(el)));
+          inner_node.add(new DefaultMutableTreeNode(key));
+          current_node.add(inner_node);
         });
-        current_node.add(new DefaultMutableTreeNode(key));
       }
       filesInConnection.setVisible(true);
       filesInConnection.addTreeSelectionListener(that);
