@@ -244,11 +244,14 @@ public class MyToolWindow implements TreeSelectionListener {
     }
   }
 
-  private void goToPos(String[] target, String pos) {
+  private void goToPos(String[] target, String poscol) {
+    String[] poscolarr = poscol.split(":");
+    String pos = poscolarr[0];
+    String col = poscolarr[1];
     Path file = Paths.get(target[target.length - 2]);
     PsiFile targetFile = getFilesByName(activeProject,file.getFileName().toString(), GlobalSearchScope.allScope(activeProject))[0];
     if(Paths.get(targetFile.getVirtualFile().getPath()).toString().equals(file.toString())){
-      new OpenFileDescriptor(activeProject,targetFile.getVirtualFile(), Objects.requireNonNull(targetFile.getViewProvider().getDocument()).getLineStartOffset(Integer.parseInt(pos)-1)).navigate(true);
+      new OpenFileDescriptor(activeProject,targetFile.getVirtualFile(), Objects.requireNonNull(targetFile.getViewProvider().getDocument()).getLineStartOffset(Integer.parseInt(pos)-1)+Integer.parseInt(col)-1).navigate(true);
     }
   }
 }

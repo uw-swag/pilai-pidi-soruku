@@ -20,7 +20,8 @@ repositories {
 dependencies {
 //    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
     implementation ("org.jgrapht:jgrapht-core:1.5.1")
-    implementation ("commons-io:commons-io:2.6")
+    implementation ("commons-io:commons-io:20030203.000550")
+    implementation (files("libs/pilaipidi-0.0.1.jar"))
 }
 
 // Configure gradle-intellij-plugin plugin.
