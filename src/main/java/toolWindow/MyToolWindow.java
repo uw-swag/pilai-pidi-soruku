@@ -21,8 +21,8 @@ import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
-import com.noble.Main;
-import com.noble.models.Encl_name_pos_tuple;
+import ca.uwaterloo.swag.Main;
+import ca.uwaterloo.swag.models.EnclNamePosTuple;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -136,12 +136,12 @@ public class MyToolWindow implements TreeSelectionListener {
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
     MyToolWindow that = this;
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      Hashtable<String, Set<List<Encl_name_pos_tuple>>> result = Main.nonCLI(arguments);
+      Hashtable<String, Set<List<EnclNamePosTuple>>> result = Main.nonCLI(arguments);
 
       Enumeration<String> res_to_analyze = result.keys();
       while (res_to_analyze.hasMoreElements()) {
         String key = res_to_analyze.nextElement();
-        Set<List<Encl_name_pos_tuple>> current_violation = result.get(key);
+        Set<List<EnclNamePosTuple>> current_violation = result.get(key);
         DefaultMutableTreeNode current_node = new DefaultMutableTreeNode(key);
         root.add(current_node);
         current_violation.forEach(v-> {
