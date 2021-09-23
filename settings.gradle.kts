@@ -1,1 +1,1 @@
-rootProject.name = "CrossSrcBuggy"
+rootProject.name = "PilaiPidiSoruku"

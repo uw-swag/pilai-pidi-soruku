@@ -22,12 +22,12 @@ A static analysis plugin for cross language buffer overflow detection. Analyzes 
 
 - Using IDE built-in plugin system:
   
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "CrossSrcBuggy"</kbd> >
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "PilaiPidiSoruku"</kbd> >
   <kbd>Install Plugin</kbd>
   
 - Manually:
 
-  Download the [latest release](https://github.com/NobleMathews/CrossSrcBuggy/releases/latest) and install it manually using
+  Download the [latest release](https://github.com/uw-swag/pilai-pidi-soruku/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 

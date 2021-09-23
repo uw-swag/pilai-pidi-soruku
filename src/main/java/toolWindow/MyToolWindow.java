@@ -23,6 +23,7 @@ import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
 import ca.uwaterloo.swag.Main;
 import ca.uwaterloo.swag.models.EnclNamePosTuple;
+import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,9 +51,28 @@ public class MyToolWindow implements TreeSelectionListener {
   private JTree filesInConnection;
   @SuppressWarnings("unused")
   private JScrollPane scrollerWindow;
+  private JPanel myStatusContent;
+  private JLabel label = new JLabel("Loading...");
 
   private Project activeProject = null;
   private TreePath c_path;
+
+  private void loadingPanel() {
+    JPanel panel = myStatusContent;
+    panel.setVisible(false);
+    panel.setLayout( new MigLayout( ) );
+
+    ClassLoader cldr = this.getClass().getClassLoader();
+    java.net.URL imageURL   = cldr.getResource("img/load.gif");
+    assert imageURL != null;
+    ImageIcon imageIcon = new ImageIcon(imageURL);
+    JLabel iconLabel = new JLabel();
+    iconLabel.setIcon(imageIcon);
+    imageIcon.setImageObserver(iconLabel);
+
+    panel.add(label,"push, align center");
+    panel.add(iconLabel,"push, align center");
+  }
 
   class TreePopup extends JPopupMenu {
     private void cppBreakNotification() {
@@ -118,6 +138,8 @@ public class MyToolWindow implements TreeSelectionListener {
   }
 
   public void runSrcBuggy() {
+    myStatusContent.setVisible(true);
+    label.setText("Loading ...");
     filesInConnection.setVisible(false);
     String[] arguments = {"location"};
     String directory;
@@ -151,6 +173,7 @@ public class MyToolWindow implements TreeSelectionListener {
           current_node.add(inner_node);
         });
       }
+      myStatusContent.setVisible(false);
       filesInConnection.setVisible(true);
       filesInConnection.addTreeSelectionListener(that);
       filesInConnection.setModel(treeModel);
@@ -161,6 +184,7 @@ public class MyToolWindow implements TreeSelectionListener {
   }
 
   public JPanel getContent() {
+    loadingPanel();
     return myToolWindowContent;
   }
 

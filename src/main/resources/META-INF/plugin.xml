@@ -1,15 +1,21 @@
 <idea-plugin>
-    <id>com.github.noblemathews.crosssrcbuggy</id>
-    <name>CrossSrcBuggy</name>
+    <id>ca.uwaterloo.swag.pilaipidisoruku</id>
+    <name>PilaiPidiSoruku</name>
     <vendor>noblemathews</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Src Buggy" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+        <toolWindow id="Pilai Pidi" secondary="true" icon="AllIcons.General.Modified" anchor="right"
                     factoryClass="toolWindow.MyToolWindowFactory"/>
     </extensions>
+    <actions>
+    <action class="caretCheck.PsiCaretAction" id="PsiFlow"
+            text="Analyze Cross Language Data Flow">
+        <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+    </action>
+    </actions>
 
 <!--    <actions>-->
 <!--        <action class="com.github.noblemathews.protobuggy.generatePsi.PsiAction" id="PsiBuggy"-->
