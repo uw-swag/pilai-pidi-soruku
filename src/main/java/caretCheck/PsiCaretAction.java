@@ -27,9 +27,9 @@ import java.util.*;
 
 public class PsiCaretAction extends AnAction {
 
-    public void runSrcBuggy(JTree filesInConnection, Project activeProject) {
+    public void runSrcBuggy(JTree filesInConnection, Project activeProject, String singleTarget) {
         filesInConnection.setVisible(false);
-        String[] arguments = {"location"};
+        String[] arguments = {"location", "-node", "singleTarget"};
         String directory;
         Project[] projects = ProjectManager.getInstance().getOpenProjects();
         for (Project project : projects) {
@@ -41,6 +41,7 @@ public class PsiCaretAction extends AnAction {
         if (activeProject == null) return;
         directory = activeProject.getBasePath();
         arguments[0] = directory;
+        arguments[2] = singleTarget;
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -77,9 +78,14 @@ public class PsiCaretAction extends AnAction {
         assert psiFile != null;
         VirtualFile vFile = psiFile.getOriginalFile().getVirtualFile();
         assert editor != null;
+//        psiFile.findElementAt(currentCaret.getOffset()))
         Caret currentCaret = editor.getCaretModel().getCurrentCaret();
-        @NotNull String offset = currentCaret.getLogicalPosition().toString();
-        @NotNull String fileName = vFile.getPath();
+        int correctedCaret = (currentCaret.getOffset()- Objects.requireNonNull(psiFile.findElementAt(currentCaret.getOffset())).getTextOffset())-1;
+        String currentElement = Objects.requireNonNull(psiFile.findElementAt(currentCaret.getOffset())).getText();
+        String fileName = vFile.getPath();
+        String offset = (currentCaret.getLogicalPosition().line+1)+":"+(currentCaret.getLogicalPosition().column-correctedCaret);
+        String singleTarget = String.join("@AT@",new String[]{currentElement,fileName,offset});
+
         assert project != null;
         ToolWindow myToolWindow = ToolWindowManager.getInstance(project).getToolWindow("PilaiPidiDataflow");
         assert myToolWindow != null;
@@ -87,7 +93,7 @@ public class PsiCaretAction extends AnAction {
         final JTree filesInConnection = (JTree) ((JScrollPane) myStatusContent.getComponent(1)).getViewport().getComponent(0);
         if (filesInConnection != null) {
             myToolWindow.show(null);
-            runSrcBuggy(filesInConnection, project);
+            runSrcBuggy(filesInConnection, project, singleTarget);
 //            Messages.showMessageDialog(project, filesInConnection.toString(), "PSI Info", null);
         }
 //        Messages.showMessageDialog(project, fileName+" "+offset, "PSI Info", null);
