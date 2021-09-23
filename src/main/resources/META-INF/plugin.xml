@@ -9,6 +9,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Pilai Pidi" secondary="true" icon="AllIcons.General.Modified" anchor="right"
                     factoryClass="toolWindow.MyToolWindowFactory"/>
+        <toolWindow id="PilaiPidiDataflow" secondary="true" icon="AllIcons.General.Modified" anchor="bottom"
+                    factoryClass="flowWindow.MyFlowWindowFactory"/>
     </extensions>
     <actions>
     <action class="caretCheck.PsiCaretAction" id="PsiFlow"

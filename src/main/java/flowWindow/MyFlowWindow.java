@@ -1,19 +1,16 @@
 // Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 
-package toolWindow;
+package flowWindow;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.xdebugger.XDebuggerManager;
@@ -21,9 +18,6 @@ import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.breakpoints.XBreakpointManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpointType;
-import ca.uwaterloo.swag.Main;
-import ca.uwaterloo.swag.models.EnclNamePosTuple;
-import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -33,48 +27,27 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
 
 import static com.intellij.psi.search.FilenameIndex.getFilesByName;
 
 @SuppressWarnings("SpellCheckingInspection")
-public class MyToolWindow {
+public class MyFlowWindow {
 
-  private JButton refreshToolWindowButton;
   private JButton hideToolWindowButton;
   private JPanel myToolWindowContent;
   private JTree filesInConnection;
   @SuppressWarnings("unused")
   private JScrollPane scrollerWindow;
-  private JPanel myStatusContent;
-  private final JLabel label = new JLabel("Loading...");
 
   private Project activeProject = null;
   private TreePath c_path;
-
-  private void loadingPanel() {
-    JPanel panel = myStatusContent;
-    panel.setVisible(false);
-    panel.setLayout( new MigLayout( ) );
-
-    ClassLoader cldr = this.getClass().getClassLoader();
-    java.net.URL imageURL   = cldr.getResource("img/load.gif");
-    assert imageURL != null;
-    ImageIcon imageIcon = new ImageIcon(imageURL);
-    JLabel iconLabel = new JLabel();
-    iconLabel.setIcon(imageIcon);
-    imageIcon.setImageObserver(iconLabel);
-
-    panel.add(label,"push, align center");
-    panel.add(iconLabel,"push, align center");
-  }
 
   class TreePopup extends JPopupMenu {
     private void cppBreakNotification() {
@@ -124,12 +97,11 @@ public class MyToolWindow {
     }
   }
 
-  public MyToolWindow(ToolWindow toolWindow) {
+  public MyFlowWindow(ToolWindow toolWindow) {
     DefaultTreeModel model =(DefaultTreeModel) filesInConnection.getModel();
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Please press run to begin Analysis");
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Please right click at required point and start Analysis");
     model.setRoot(root);
     hideToolWindowButton.addActionListener(e -> toolWindow.hide(null));
-    refreshToolWindowButton.addActionListener(e -> runSrcBuggy());
     final TreePopup treePopup = new TreePopup();
     filesInConnection.addMouseListener(new MouseAdapter() {
       public void mouseReleased(MouseEvent e) {
@@ -174,51 +146,7 @@ public class MyToolWindow {
 
   }
 
-  public void runSrcBuggy() {
-    myStatusContent.setVisible(true);
-    filesInConnection.setVisible(false);
-    String[] arguments = {"location"};
-    String directory;
-    Project[] projects = ProjectManager.getInstance().getOpenProjects();
-    for (Project project : projects) {
-      Window window = WindowManager.getInstance().suggestParentWindow(project);
-      if (window != null && window.isActive()) {
-        activeProject = project;
-      }
-    }
-    if (activeProject == null) return;
-    directory = activeProject.getBasePath();
-    arguments[0] = directory;
-
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
-    DefaultTreeModel treeModel = new DefaultTreeModel(root);
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      Hashtable<String, Set<List<EnclNamePosTuple>>> result = Main.nonCLI(arguments);
-
-      Enumeration<String> res_to_analyze = result.keys();
-      while (res_to_analyze.hasMoreElements()) {
-        String key = res_to_analyze.nextElement();
-        Set<List<EnclNamePosTuple>> current_violation = result.get(key);
-        DefaultMutableTreeNode current_node = new DefaultMutableTreeNode(key);
-        root.add(current_node);
-        current_violation.forEach(v-> {
-          DefaultMutableTreeNode inner_node = new DefaultMutableTreeNode("Violation Path");
-          v.forEach(el->inner_node.add(new DefaultMutableTreeNode(el)));
-          inner_node.add(new DefaultMutableTreeNode(key));
-          current_node.add(inner_node);
-        });
-      }
-      myStatusContent.setVisible(false);
-      filesInConnection.setVisible(true);
-      filesInConnection.setModel(treeModel);
-      filesInConnection.setRootVisible(true);
-    });
-
-//    timeZone.setIcon(new ImageIcon(getClass().getResource("/toolWindow/Time-zone-icon.png")));
-  }
-
   public JPanel getContent() {
-    loadingPanel();
     return myToolWindowContent;
   }
 
