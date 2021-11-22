@@ -11,16 +11,16 @@ import org.jetbrains.annotations.NotNull;
 
 public class MyFlowWindowFactory implements ToolWindowFactory {
 
-  /**
-   * Create the tool window content.
-   *
-   * @param project    current project
-   * @param toolWindow current tool window
-   */
-  public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    MyFlowWindow myToolWindow = new MyFlowWindow(toolWindow);
-    ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-    Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
-    toolWindow.getContentManager().addContent(content);
-  }
+    /**
+     * Create the tool window content.
+     *
+     * @param project    current project
+     * @param toolWindow current tool window
+     */
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        MyFlowWindow myToolWindow = new MyFlowWindow(toolWindow);
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
+        toolWindow.getContentManager().addContent(content);
+    }
 }
