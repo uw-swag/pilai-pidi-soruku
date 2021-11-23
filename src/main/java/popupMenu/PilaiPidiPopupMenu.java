@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PilaiPidiPopupMenu extends JPopupMenu {
     private final Project activeProject;
-    private final TreePath c_path;
+    private final TreePath selectedPath;
 
     private void cppBreakNotification() {
         String GROUP_DISPLAY_ID = "PilaiPidi";
@@ -36,16 +36,16 @@ public class PilaiPidiPopupMenu extends JPopupMenu {
         Notifications.Bus.notify(notification);
     }
 
-    public PilaiPidiPopupMenu(Project activeProject, TreePath c_path) {
+    public PilaiPidiPopupMenu(Project activeProject, TreePath selectedPath) {
         this.activeProject = activeProject;
-        this.c_path = c_path;
+        this.selectedPath = selectedPath;
         init();
     }
 
     public void init() {
         JMenuItem add = new JMenuItem("breakpoint");
         add.addActionListener(ae -> {
-            DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) c_path.getLastPathComponent();
+            DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
             if (lastPathComponent.toString().split(",").length > 1) {
                 String[] target = lastPathComponent.toString().split(",");
                 addBreakPoint(target, target[target.length - 2]);
