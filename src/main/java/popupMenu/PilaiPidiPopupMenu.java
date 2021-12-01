@@ -42,9 +42,15 @@ public class PilaiPidiPopupMenu extends JPopupMenu {
         init();
     }
 
+    public PilaiPidiPopupMenu(TreePath selectedPath) {
+        this.selectedPath = selectedPath;
+        this.activeProject = null;
+        init();
+    }
+
     public void init() {
         JMenuItem add = new JMenuItem("breakpoint");
-        add.addActionListener(ae -> {
+        add.addActionListener(actionEvent -> {
             DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
             if (lastPathComponent.toString().split(",").length > 1) {
                 String[] target = lastPathComponent.toString().split(",");
@@ -64,8 +70,8 @@ public class PilaiPidiPopupMenu extends JPopupMenu {
                 addBreakPoint(target, modTarget[modTarget.length - 2]);
             }
         });
-        add(add);
-        add(new JSeparator());
+        this.add(add);
+        this.add(new JSeparator());
     }
 
     private void addBreakPoint(String[] target, String source) {

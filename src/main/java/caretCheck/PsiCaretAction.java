@@ -43,11 +43,14 @@ public class PsiCaretAction extends AnAction {
                 "No Sources Detected", null);
             return;
         }
-        int correctedCaret = (currentCaret.getOffset() - Objects.requireNonNull(elementAt).getTextOffset()) - 1;
-        String currentElement = Objects.requireNonNull(elementAt).getText();
+        int correctedCaret = (currentCaret.getOffset() - elementAt.getTextOffset()) - 1;
+        String currentElement = elementAt.getText();
         String fileName = vFile.getPath();
-        String offset = (currentCaret.getLogicalPosition().line + 1) + ":" + (currentCaret.getLogicalPosition().column
-            - correctedCaret);
+        int caretDiff = currentCaret.getLogicalPosition().column;
+        if (currentCaret.getLogicalPosition().column >= correctedCaret) {
+            caretDiff = currentCaret.getLogicalPosition().column - correctedCaret;
+        }
+        String offset = (currentCaret.getLogicalPosition().line + 1) + ":" + caretDiff;
         String singleTarget = String.join("@AT@", new String[]{currentElement, fileName, offset});
 
         assert project != null;

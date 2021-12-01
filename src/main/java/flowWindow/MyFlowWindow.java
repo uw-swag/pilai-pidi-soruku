@@ -2,7 +2,6 @@
 
 package flowWindow;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -33,9 +32,8 @@ public class MyFlowWindow {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(
             "Please right click at required point and start Analysis");
         model.setRoot(root);
-        hideToolWindowButton.addActionListener(e -> toolWindow.hide(null));
-        Project activeProject = null;
-        final PilaiPidiPopupMenu pilaiPidiPopupMenu = new PilaiPidiPopupMenu(activeProject, selectedPath);
+        hideToolWindowButton.addActionListener(event -> toolWindow.hide(null));
+        final PilaiPidiPopupMenu pilaiPidiPopupMenu = new PilaiPidiPopupMenu(selectedPath);
         filesInConnection.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent mouseEvent) {
                 selectedPath = filesInConnection.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
