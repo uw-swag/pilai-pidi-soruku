@@ -15,6 +15,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import popupMenu.TreeNodeSelector;
 import popupMenu.PilaiPidiPopupMenu;
+import toolWindow.MyToolWindow;
 
 public class MyFlowWindow {
 
@@ -46,6 +47,7 @@ public class MyFlowWindow {
         TreeNodeSelector nodeSelector = new TreeNodeSelector();
         filesInConnection.getSelectionModel().addTreeSelectionListener(nodeSelector);
         filesInConnection.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        nodeSelector.setActiveProject(MyToolWindow.getActiveProject());
     }
 
     public JPanel getContent() {

@@ -57,7 +57,7 @@ public class PilaiPidiPopupMenu extends JPopupMenu {
                 addBreakPoint(target, target[target.length - 2]);
             } else { // for logic below to work violated node must be in the same doc as the exception point "... at [...]"
                 String[] modTarget;
-                if (lastPathComponent.getParent().toString().equals("Possible Buffer Overflow Violations")) {
+                if (lastPathComponent.getParent().toString().equals("Possible data flow paths")) {
                     modTarget = lastPathComponent
                         .getChildAt(Collections.list(lastPathComponent.children()).size() - 2).toString()
                         .split(",");

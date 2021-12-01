@@ -37,7 +37,7 @@ public class TreeNodeSelector implements TreeSelectionListener {
                 String[] modTarget;
                 TreeNode parent = lastPathComponent.getParent();
                 int index = lastPathComponent.getChildCount() - 2;
-                if (parent.toString().equals("Possible Buffer Overflow Violations")) {
+                if (parent.toString().equals("Possible data flow paths")) {
                     modTarget = lastPathComponent.getChildAt(index).toString().split(",");
                 } else {
                     modTarget = parent.getChildAt(index).toString().split(",");

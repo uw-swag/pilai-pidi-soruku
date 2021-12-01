@@ -83,7 +83,7 @@ public class PsiCaretAction extends AnAction {
         arguments[0] = activeProject.getBasePath();
         arguments[2] = singleTarget;
 
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible data flow paths");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         final PilaiPidi pilaiPidi = new PilaiPidi();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {

@@ -91,7 +91,7 @@ public class MyToolWindow {
         nodeSelector.setActiveProject(activeProject);
         arguments[0] = activeProject.getBasePath();
 
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible Buffer Overflow Violations");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Possible data flow paths");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         final PilaiPidi pilaiPidi = new PilaiPidi();
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
@@ -121,14 +121,14 @@ public class MyToolWindow {
 
     public static void populateTreeView(DefaultMutableTreeNode root,
                                         Entry<String, Set<List<DFGNode>>> sourceToSinkPath) {
-        String violationStr = sourceToSinkPath.getKey();
-        Set<List<DFGNode>> currentViolation = sourceToSinkPath.getValue();
-        DefaultMutableTreeNode currentNode = new DefaultMutableTreeNode(violationStr);
+        String dataFlowStr = sourceToSinkPath.getKey();
+        Set<List<DFGNode>> currentDataFlowPath = sourceToSinkPath.getValue();
+        DefaultMutableTreeNode currentNode = new DefaultMutableTreeNode(dataFlowStr);
         root.add(currentNode);
-        currentViolation.forEach(violations -> {
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("Violation Path");
-            violations.forEach(el -> treeNode.add(new DefaultMutableTreeNode(el)));
-            treeNode.add(new DefaultMutableTreeNode(violationStr));
+        currentDataFlowPath.forEach(path -> {
+            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("Data flow path");
+            path.forEach(dfgNode -> treeNode.add(new DefaultMutableTreeNode(dfgNode)));
+            treeNode.add(new DefaultMutableTreeNode(dataFlowStr));
             currentNode.add(treeNode);
         });
     }
