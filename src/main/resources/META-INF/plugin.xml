@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>ca.uwaterloo.swag.pilaipidisoruku</id>
     <name>PilaiPidiSoruku</name>
-    <vendor>noblemathews</vendor>
+    <vendor>kishanthan</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
